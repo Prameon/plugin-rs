@@ -1,8 +1,8 @@
 /* # Компиляция плагина Vst3 и Clap.
 
-    Компиляция проекта `plugin`(команда терминала):
+    Компиляция проекта `plugin-rs`(команда терминала):
     ```
-    cargo xtask bundle plugin --release
+    cargo xtask bundle plugin-rs --release
     ```
 */
 

@@ -11,22 +11,31 @@
 //pub mod example;
 //pub use example::plugin_effect::App;
 
-
-
 // Основной код.===============================================
 use nih_plug::prelude::*;
 use std::sync::Arc;
 use crate::parameters::Parameters;
 
+pub mod synth;
+use synth::Synth;
+pub mod osc;
+use osc::Osc;
+pub mod midi;
+use midi::Midi;
+
+
 pub struct App {
     //Parameters
     params: Arc<Parameters>,
+    //Synth 
+    synth: Synth,
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
-            params: Arc::new(Parameters::default()),
+            params: Arc::new(Parameters::default()), 
+            synth: Synth::default()
         }
     }
 }
@@ -58,13 +67,14 @@ impl Plugin for App {
     fn initialize(
         &mut self,
         _bus_config: &BusConfig,
-        _buffer_config: &BufferConfig,
+        buffer_config: &BufferConfig,
         _context: &mut impl InitContext,
     ) -> bool {
         //Получить данные про загрузке.
         //=============================
         // Sample Rate 44100.0 или 48000.0
-        //let sample_rate: f32 = buffer_config.sample_rate; 
+        let sample_rate: f32 = buffer_config.sample_rate; 
+        self.synth.setting(sample_rate);
         //=============================
         true
     }
@@ -75,22 +85,31 @@ impl Plugin for App {
         &mut self,
         buffer: &mut Buffer,
         _aux: &mut AuxiliaryBuffers,
-        _context: &mut impl ProcessContext,
+        context: &mut impl ProcessContext,
     ) -> ProcessStatus {
         // !!! channel - Каждый канал (L, R).
+        // !!! time_buffer -(время буфера) Индекс семпла для каждого канала в буфере.
         // !!! sample - Каждый семпл для каждого канала в буфере.
-        for channel in buffer.iter_samples() {
+        for (_time_buffer , channel) in buffer.iter_samples().enumerate(){
             for sample in channel{
+                //Bypass
                 if self.params.bypass.value() {
                     *sample = *sample; 
                 } else {
+                    // Получить midi событие 
+                    self.synth.input_midi(context);
+
+                    // Создать `signal` - это аудио сигнал, генератора волны
+                    let output_signal = self.synth.output(&self.params);
+
+                    // Громкость параметр
                     let master_gain = self.params.master_gain.smoothed.next();
-                    *sample *= util::db_to_gain(master_gain);
+                    
+                    // Вывод
+                    *sample = output_signal * util::db_to_gain(master_gain);
                 }
             }
         }
         ProcessStatus::Normal
     }
 }
-
-

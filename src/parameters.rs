@@ -8,6 +8,9 @@ pub struct Parameters {
 
     #[id = "bypass"]
     pub bypass: BoolParam,
+
+    #[id = "freq"]
+    pub frequency: FloatParam,
 }
 
 impl Default for Parameters {
@@ -31,6 +34,22 @@ impl Default for Parameters {
                 "Bypass", 
                 false
             ),
+
+            // 3 Frequency
+            frequency: FloatParam::new(
+                "Frequency",
+                440.0,
+                FloatRange::Skewed {
+                    min: 20.0,
+                    max: 20_000.0,
+                    factor: FloatRange::skew_factor(-2.0),
+                },
+            )
+            .with_smoother(SmoothingStyle::Linear(10.0))
+            // We purposely don't specify a step size here, but the parameter should still be
+            // displayed as if it were rounded. This formatter also includes the unit.
+            .with_value_to_string(formatters::v2s_f32_hz_then_khz(0))
+            .with_string_to_value(formatters::s2v_f32_hz_then_khz()),
         }
     }
 }

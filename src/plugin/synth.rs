@@ -40,7 +40,9 @@ impl Synth {
 
             //Добавить голос
             mix.push(
-                self.voice[count_voice]
+                self.voice.get(count_voice)
+                .unwrap()
+                .to_owned()
                 .sine(util::midi_note_to_freq(note))
                  * note_gain.next()
             );

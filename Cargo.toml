@@ -19,8 +19,10 @@ members = ["xtask"]
 nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git" }
 
 # GUI
-nih_plug_egui = { git = "https://github.com/robbert-vdh/nih-plug.git" }
-egui = "0.19.0"
+#nih_plug_egui = { git = "https://github.com/robbert-vdh/nih-plug.git" }
+#egui = "0.19.0"
 
-nih_plug_iced = { git = "https://github.com/robbert-vdh/nih-plug.git" }
-iced = "0.4.2"
+#nih_plug_iced = { git = "https://github.com/robbert-vdh/nih-plug.git" }
+#iced = "0.5.2"
+
+audio-visualizer = "0.3.1"

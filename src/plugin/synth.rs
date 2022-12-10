@@ -10,9 +10,9 @@ pub struct Synth {
     //Активные(нажатые) ноты.
     midi: Midi,
     //Осциллятор
-    osc: Osc,
+    osc: Generator,
     //Голоса.
-    voice: Vec<Osc>,
+    voice: Vec<Generator>,
 }
  
 impl Synth {
@@ -40,10 +40,8 @@ impl Synth {
 
             //Добавить голос
             mix.push(
-                self.voice.get(count_voice)
-                .unwrap()
-                .to_owned()
-                .sine(util::midi_note_to_freq(note))
+                self.voice[count_voice]
+                .output(util::midi_note_to_freq(note))
                  * note_gain.next()
             );
         });

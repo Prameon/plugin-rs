@@ -1,5 +1,5 @@
 use std::f32::consts::TAU;
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Copy)]
 pub struct Osc {
     sample_rate: f32, 
     phase: f32,

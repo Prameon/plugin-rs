@@ -1,5 +1,5 @@
-/* Примеры базовых плагинов 
-Для запуска - раскомментировать модуль и нужный пример, 
+/* Примеры базовых плагинов
+Для запуска - раскомментировать модуль и нужный пример,
 и закомментировать основной код без зависимостей.
 */
 
@@ -12,30 +12,29 @@
 //pub use example::plugin_effect::App;
 
 // Основной код.===============================================
+use crate::parameters::Parameters;
 use nih_plug::prelude::*;
 use std::sync::Arc;
-use crate::parameters::Parameters;
 
 pub mod synth;
 use synth::Synth;
-pub mod osc;
-use osc::Osc;
+pub mod generator;
+use generator::{Generator, GeneratorTrait};
 pub mod midi;
 use midi::Midi;
-
 
 pub struct App {
     //Parameters
     params: Arc<Parameters>,
-    //Synth 
+    //Synth
     synth: Synth,
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
-            params: Arc::new(Parameters::default()), 
-            synth: Synth::default()
+            params: Arc::new(Parameters::default()),
+            synth: Synth::default(),
         }
     }
 }
@@ -57,7 +56,6 @@ impl Plugin for App {
         self.params.clone() as Arc<dyn Params>
     }
 
-
     fn accepts_bus_config(&self, config: &BusConfig) -> bool {
         //https://github.com/robbert-vdh/nih-plug-template/blob/master/%7B%7B%20cookiecutter.project_name%20%7D%7D/src/lib.rs
         //Поддерживает ли плагин конфигурацию ввод шины.
@@ -70,10 +68,10 @@ impl Plugin for App {
         buffer_config: &BufferConfig,
         _context: &mut impl InitContext,
     ) -> bool {
-        //Получить данные про загрузке.
+        //Получить данные при загрузке.
         //=============================
         // Sample Rate 44100.0 или 48000.0
-        let sample_rate: f32 = buffer_config.sample_rate; 
+        let sample_rate: f32 = buffer_config.sample_rate;
         self.synth.setting(sample_rate);
         //=============================
         true
@@ -90,21 +88,18 @@ impl Plugin for App {
         // !!! channel - Каждый канал (L, R).
         // !!! time_buffer -(время буфера) Индекс семпла для каждого канала в буфере.
         // !!! sample - Каждый семпл для каждого канала в буфере.
-        for (_time_buffer , channel) in buffer.iter_samples().enumerate(){
-            for sample in channel{
+        for (_time_buffer, channel) in buffer.iter_samples().enumerate() {
+            for sample in channel {
                 //Bypass
                 if self.params.bypass.value() {
-                    *sample = *sample; 
+                    *sample = *sample;
                 } else {
-                    // Получить midi событие 
+                    // Получить midi событие
                     self.synth.input_midi(context);
-
                     // Создать `signal` - это аудио сигнал, генератора волны
                     let output_signal = self.synth.output(&self.params);
-
                     // Громкость параметр
                     let master_gain = self.params.master_gain.smoothed.next();
-                    
                     // Вывод
                     *sample = output_signal * util::db_to_gain(master_gain);
                 }
